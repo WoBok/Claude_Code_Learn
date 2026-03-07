@@ -31,6 +31,9 @@ jobs:
           # 将信息追加到 History.md (>> 符号会在文件不存在时自动创建，存在时追加)
           echo "$DATETIME-$COMMIT_MSG\n" >> History.md
 
+          # 额外写入一个空行
+          echo "" >> History.md
+
       # 3. 将更改提交并推送回仓库
       - name: Commit and Push changes
         run: |
