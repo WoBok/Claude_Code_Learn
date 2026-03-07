@@ -1,0 +1,43 @@
+name: Auto Update History
+
+# 触发条件：当有代码 push 到仓库时
+on:
+  push:
+    branches:
+      - main  # 或者你的主分支名称，如 master
+
+jobs:
+  update-log:
+    runs-on: ubuntu-latest
+    # 必须赋予写权限，否则无法将修改推送到仓库
+    permissions:
+      contents: write
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 获取所有历史记录以确保 git log 正常
+
+      # 2. 修改 History.md
+      - name: Append commit to History.md
+        run: |
+          # 获取当前日期和时间 (例如: 2026-03-07-17:30)
+          DATETIME=$(date +'%Y-%m-%d-%H:%M')
+          # 获取当前 commit 的简短信息
+          COMMIT_MSG=$(git log -1 --pretty=%s)
+          
+          # 将信息追加到 History.md (>> 符号会在文件不存在时自动创建，存在时追加)
+          echo "$DATETIME-$COMMIT_MSG" >> History.md
+
+      # 3. 将更改提交并推送回仓库
+      - name: Commit and Push changes
+        run: |
+          # 配置虚拟的 Git 用户信息
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add History.md
+          # 检查是否有文件变化，避免没有变化时 commit 报错
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update History.md [skip ci]" && git push)
