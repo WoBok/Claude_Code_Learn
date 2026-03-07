@@ -29,7 +29,7 @@ jobs:
           COMMIT_MSG=$(git log -1 --pretty=%s)
           
           # 将信息追加到 History.md (>> 符号会在文件不存在时自动创建，存在时追加)
-          echo "$DATETIME-$COMMIT_MSG" >> History.md
+          echo "$DATETIME: $COMMIT_MSG">> History.md
 
           # 额外写入一个空行
           echo "" >> History.md
