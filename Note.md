@@ -335,6 +335,7 @@ Claude Code 是一个代理式编码环境，通过三个阶段工作：**收集
 | `/context` | 查看上下文使用情况 |
 | `/cost` | 查看当前会话的 token 使用统计 |
 | `/model` | 切换模型 |
+| `/install-github-app` | 安装 GitHub 集成（PR review 等） |
 
 ---
 
@@ -417,3 +418,85 @@ Use two parallel subagents to brainstorm possible plans.
 - 架构决策
 - 复杂问题多方案对比
 - 需要创意解决方案的任务
+
+---
+
+## 十六、Hooks 系统
+
+### 什么是 Hooks
+
+Hooks 是用户定义的 shell 命令、HTTP 端点或 LLM 提示，在 Claude Code 生命周期的特定时刻自动执行。
+
+### 主要用途
+
+- 强制执行项目规则
+- 自动化重复任务
+- 与现有工具集成
+
+### Hook 事件类型
+
+| 事件 | 触发时机 | 可阻止 |
+|------|----------|--------|
+| **PreToolUse** | 工具调用执行前 | ✅ |
+| **PostToolUse** | 工具调用成功后 | ❌ |
+| **PostToolUseFailure** | 工具调用失败后 | ❌ |
+| **PermissionRequest** | 请求权限时 | ✅ |
+| **SessionStart** | 会话开始时 | ❌ |
+| **SessionEnd** | 会话结束时 | ❌ |
+| **Notification** | Claude 需要输入时 | ❌ |
+| **Stop** | Claude 完成响应时 | ❌ |
+| **UserPromptSubmit** | 用户提交提示时 | ❌ |
+| **PreCompact** | 上下文压缩前 | ❌ |
+| **ConfigChange** | 配置变更时 | ❌ |
+
+### 配置方式
+
+1. 在 CLI 中输入 `/hooks` 打开交互菜单
+2. 选择事件类型
+3. 配置 matcher（过滤器）
+4. 添加要执行的命令
+
+配置存储位置：
+- 用户级：`~/.claude/settings.json`
+- 项目级：`.claude/settings.json`
+
+### Hooks Matcher 配置
+
+Matcher 是正则表达式字符串，不同事件类型匹配不同字段：
+
+| 事件 | 匹配内容 | 可用值 |
+|------|----------|--------|
+| PreToolUse / PostToolUse / PostToolUseFailure / PermissionRequest | 工具名称 | Bash, Edit, Write, Read, Glob, Grep, Agent, WebFetch, WebSearch, mcp__* |
+| SessionStart | 启动方式 | startup, resume, clear, compact |
+| SessionEnd | 结束原因 | clear, logout, prompt_input_exit, bypass_permissions_disabled, other |
+| Notification | 通知类型 | permission_prompt, idle_prompt, auth_success, elicitation_dialog |
+| SubagentStart / SubagentStop | 代理类型 | Bash, Explore, Plan, 或自定义代理名 |
+| PreCompact | 触发方式 | manual, auto |
+| ConfigChange | 配置来源 | user_settings, project_settings, local_settings, policy_settings, skills |
+
+**不支持 Matcher 的事件：**
+
+UserPromptSubmit, Stop, TeammateIdle, TaskCompleted, WorktreeCreate, WorktreeRemove, InstructionsLoaded — 这些事件每次都会触发。
+
+**参考文档：** https://code.claude.com/docs/en/hooks
+
+---
+
+## 十七、命令模板 (Command Templates)
+
+命令模板是 `.claude/commands/` 目录下的 Markdown 文件，用于定义可重用的提示词模板。
+
+### 模板结构
+
+```markdown
+You will be implementing a new feature in this codebase
+$ARGUMENTS
+IMPORTANT: Only do this for front-end features,
+Once this feature is built, make sure to write the changes you made to file called frontend-changes.md
+Do not ask for permissions to modify this file, assume you can always do it.
+```
+
+### 使用方式
+
+- `$ARGUMENTS` 会被用户输入的参数替换
+- 通过 `/命令名` 调用模板
