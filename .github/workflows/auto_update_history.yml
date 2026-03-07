@@ -22,6 +22,8 @@ jobs:
 
       # 2. 修改 History.md
       - name: Append commit to History.md
+        env:
+          TZ: Asia/Shanghai  # 设置时区为中国上海
         run: |
           # 获取当前日期和时间 (例如: 2026-03-07-17:30)
           DATETIME=$(date +'%Y-%m-%d-%H:%M')
