@@ -12,7 +12,9 @@
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(where gh:*)",
+      "Bash(powershell.exe:*)"
     ]
   },
   "autoMemoryEnabled": true
