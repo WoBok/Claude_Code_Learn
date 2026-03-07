@@ -8,3 +8,5 @@
 
 2026-03-07-17:18: feat: add gitpush command and update settings
 
+2026-03-07-18:05: docs: add Hooks and Command Templates sections to Note.md
+
